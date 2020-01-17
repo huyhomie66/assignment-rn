@@ -9,18 +9,19 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import {withNavigation} from 'react-navigation';
-import {setItem} from '../utils/AsycStorage';
+import { withNavigation } from 'react-navigation';
+import { setItem } from '../utils/AsycStorage';
 
-const Auth = ({navigation}) => {
-  const Input = ({label, ...props}) => {
+const Auth = ({ navigation }) => {
+  const Input = ({ label, ...props }) => {
     return (
       <View
         style={{
           paddingHorizontal: 30,
           paddingTop: 20,
-        }}>
-        <Text style={{fontSize: 20}}>{label}</Text>
+        }}
+      >
+        <Text style={{ fontSize: 20 }}>{label}</Text>
         <TextInput
           placeholderTextColor="blue"
           style={{
@@ -34,7 +35,7 @@ const Auth = ({navigation}) => {
     );
   };
   return (
-    <SafeAreaView style={{backgroundColor: '#8db', flex: 1}}>
+    <SafeAreaView style={{ backgroundColor: '#8db', flex: 1 }}>
       <StatusBar />
       <Image
         resizeMode="cover"
@@ -55,7 +56,7 @@ const Auth = ({navigation}) => {
         <TouchableOpacity
           onPress={() => {
             setItem('rootScreen', 'inRoot');
-            navigation.navigate('HomeScreen');
+            navigation.navigate('RootStack');
           }}
           style={{
             borderRadius: 10,
@@ -66,7 +67,8 @@ const Auth = ({navigation}) => {
             margin: 20,
             alignSelf: 'center',
             width: '30%',
-          }}>
+          }}
+        >
           <Text>Submit</Text>
         </TouchableOpacity>
       </View>

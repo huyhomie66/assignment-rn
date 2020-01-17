@@ -1,25 +1,54 @@
-import {createAppContainer, createSwitchNavigator} from 'react-navigation';
-import React, {useCallback, useEffect} from 'react';
-import {View, ActivityIndicator} from 'react-native';
-import {createStackNavigator} from 'react-navigation-stack';
-
+import { createAppContainer, createSwitchNavigator } from 'react-navigation';
+import React, { useCallback, useEffect } from 'react';
+import { View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
+import { createStackNavigator } from 'react-navigation-stack';
+import { Header } from 'react-native-elements';
 import AuthScreen from '../screen/Auth';
 import OrderList from '../screen/OrderList';
-import {getItem} from '../utils/AsycStorage';
-import {navigate} from '../utils/NavigationService';
+import { getItem, removeItem } from '../utils/AsycStorage';
+import { navigate } from '../utils/NavigationService';
 import OrderScreen from '../screen/Order';
+
+const HeaderCustom = ({ title }) => (
+  <Header
+    containerStyle={{
+      backgroundColor: 'white',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <TouchableOpacity>{/* <Text>Logout</Text> */}</TouchableOpacity>
+    <Text
+      style={{
+        fontWeight: 'bold',
+      }}
+    >
+      {title}
+    </Text>
+
+    <TouchableOpacity
+      onPress={async () => {
+        navigate('AuthScreen');
+        await removeItem('rootScreen');
+      }}
+    >
+      <Text>Logout</Text>
+    </TouchableOpacity>
+  </Header>
+);
 
 const RootStack = createStackNavigator({
   OrderList: {
     screen: OrderList,
-    navigationOptions: ({navigation}) => ({
-      title: 'OrderList',
+    navigationOptions: ({ navigation }) => ({
+      header: <HeaderCustom title="Order List" />,
     }),
   },
   OrderScreen: {
     screen: OrderScreen,
-    navigationOptions: ({navigation}) => ({
-      title: 'OrderList',
+    navigationOptions: ({ navigation }) => ({
+      title: 'Order',
     }),
   },
 });
@@ -42,7 +71,7 @@ const LoadingScreen = () => {
   return (
     <ActivityIndicator
       size="large"
-      style={{position: 'absolute', top: 0, bottom: 0, right: 0, left: 0}}
+      style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 }}
     />
   );
 };
@@ -55,7 +84,7 @@ const AppNavigator = createSwitchNavigator(
   },
   {
     initialRouteName: 'LoadingScreen',
-  },
+  }
 );
 
 const AppContainer = createAppContainer(AppNavigator);
