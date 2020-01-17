@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback, useMemo} from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,10 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import {Icon} from 'react-native-elements';
+import { withNavigation } from 'react-navigation';
+import { Icon } from 'react-native-elements';
+// import {setItem} from '../utils/AsycStorage';
+import { getListBubbleTea, getListOrder } from '../service';
 
 const IconChecked = () => (
   <Icon
@@ -19,69 +22,89 @@ const IconChecked = () => (
   />
 );
 
-const DrinKItem = ({item, checked}) => {
-  const [isChecked, setChecked] = useState(false);
-  useEffect(() => {
-    setChecked(checked);
-  }, []);
-
-  return (
-    <TouchableOpacity onPress={() => setChecked(true)} style={styles.box}>
-      {useMemo(() => isChecked && <IconChecked />, [isChecked])}
-      <Image source={{uri: item.avatar}} style={styles.image} />
-      <Text numberOfLines={1} style={styles.text}>
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
-};
-
-const Home = () => {
+const Home = ({ navigation }) => {
   const [list, setList] = useState([]);
-  const [checkedList, setCheckedList] = useState([]);
+  const [allOrder, setAllOrder] = useState([]);
+  const [myOrder, setMyOrder] = useState();
 
   const getList = useCallback(async () => {
-    let orderList = await fetch(
-      'https://boba.ansuzdev.com/api/bubbleTeas',
-    ).then(res => res.json());
+    let listBubbleTea = await getListBubbleTea();
 
-    let listOrder = await fetch(
-      'https://boba.ansuzdev.com/api/orders?classCode=wd01',
-    ).then(res => res.json());
+    let listOrder = await getListOrder();
+    console.log(listOrder);
 
     const orderedItem = listOrder.map(e => e.id);
-    setCheckedList(orderedItem);
 
-    for (let i = 0; i < orderList.length; i++) {
+    let data = [];
+    listOrder.forEach(item => {
+      data.push({ id: item.id, name: item.name, avatar: item.avatar });
+    });
+    setAllOrder(data);
+
+    for (let i = 0; i < listBubbleTea.length; i++) {
       orderedItem.forEach(e => {
-        if (orderList[i].id === e) {
-          orderList[i].checked = true;
+        if (listBubbleTea[i].id === e) {
+          listBubbleTea[i].checked = true;
         }
       });
     }
-    setList(orderList);
+    setList(listBubbleTea);
   }, []);
 
   useEffect(() => {
     getList();
-  }, []);
+  }, [getList]);
+
+  const DrinKItem = ({ item, checked }) => {
+    const [isChecked, setChecked] = useState(false);
+
+    useEffect(() => {
+      setChecked(checked);
+    }, []);
+
+    const onPressItem = useCallback(() => {
+      const param = { id: item.id, name: item.name, avatar: item.avatar };
+      setChecked(true);
+      setAllOrder([...allOrder, param]);
+      setMyOrder(param);
+    }, []);
+
+    return (
+      <TouchableOpacity onPress={onPressItem} style={styles.box}>
+        {useMemo(() => isChecked && <IconChecked />, [isChecked])}
+        <Image source={{ uri: item.avatar }} style={styles.image} />
+        <Text numberOfLines={1} style={styles.text}>
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={{}}>
-      <FlatList
-        style={{
-          backgroundColor: '#8db',
-
-          height: Dimensions.get('window').height * 0.8,
-        }}
-        numColumns={2}
-        data={list}
-        keyExtractor={item => item.id}
-        renderItem={({item, index}) => (
-          <DrinKItem checked={item.checked} item={item} key={item.id} />
-        )}
-      />
-      <TouchableOpacity style={styles.button}>
+      {useMemo(
+        () => (
+          <FlatList
+            style={styles.flatList}
+            numColumns={2}
+            data={list}
+            keyExtractor={item => item.id}
+            renderItem={({ item, index }) => (
+              <DrinKItem checked={item.checked} item={item} key={item.id} />
+            )}
+          />
+        ),
+        [list]
+      )}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() =>
+          navigation.navigate('OrderScreen', {
+            myOrder: myOrder,
+            allOrder: allOrder,
+          })
+        }
+      >
         <Text style={styles.textButton}>Confirm</Text>
       </TouchableOpacity>
     </View>
@@ -89,6 +112,10 @@ const Home = () => {
 };
 
 const styles = StyleSheet.create({
+  flatList: {
+    backgroundColor: '#8db',
+    height: Dimensions.get('window').height * 0.8,
+  },
   iconStyle: {
     position: 'absolute',
     top: 0,
@@ -118,7 +145,7 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width * 0.45,
     margin: 10,
   },
-  image: {height: 200, width: 200, zIndex: -1},
+  image: { height: 200, width: 200, zIndex: -1 },
 });
 
-export default Home;
+export default withNavigation(Home);

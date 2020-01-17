@@ -2,14 +2,22 @@ import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import React, {useCallback, useEffect} from 'react';
 import {View, ActivityIndicator} from 'react-native';
 import {createStackNavigator} from 'react-navigation-stack';
+
 import AuthScreen from '../screen/Auth';
 import OrderList from '../screen/OrderList';
 import {getItem} from '../utils/AsycStorage';
 import {navigate} from '../utils/NavigationService';
+import OrderScreen from '../screen/Order';
 
 const RootStack = createStackNavigator({
   OrderList: {
     screen: OrderList,
+    navigationOptions: ({navigation}) => ({
+      title: 'OrderList',
+    }),
+  },
+  OrderScreen: {
+    screen: OrderScreen,
     navigationOptions: ({navigation}) => ({
       title: 'OrderList',
     }),
@@ -19,7 +27,6 @@ const RootStack = createStackNavigator({
 const LoadingScreen = () => {
   const checkAuth = useCallback(async () => {
     const result = await getItem('rootScreen');
-    console.log(result);
 
     if (result) {
       navigate('OrderList');
